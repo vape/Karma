@@ -31,3 +31,4 @@ TOut obj = new KarmaDeserializer(stream).Read<TOut>()
 * List
 * Dictionary
 * Array
+* Class
