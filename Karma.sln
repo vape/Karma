@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Karma", "Karma\Karma.csproj", "{683A9142-BFAA-4052-B512-F56C04CAB22C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KarmaTests", "KarmaTests\KarmaTests.csproj", "{B9C0FBAF-F438-4FBA-A29F-C2AF26E9B65E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{683A9142-BFAA-4052-B512-F56C04CAB22C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{683A9142-BFAA-4052-B512-F56C04CAB22C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{683A9142-BFAA-4052-B512-F56C04CAB22C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{683A9142-BFAA-4052-B512-F56C04CAB22C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9C0FBAF-F438-4FBA-A29F-C2AF26E9B65E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9C0FBAF-F438-4FBA-A29F-C2AF26E9B65E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9C0FBAF-F438-4FBA-A29F-C2AF26E9B65E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9C0FBAF-F438-4FBA-A29F-C2AF26E9B65E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A8DDFD4D-E5A6-438C-854F-977C1269C9FD}
+	EndGlobalSection
+EndGlobal
