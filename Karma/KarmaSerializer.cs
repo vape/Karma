@@ -31,6 +31,8 @@ namespace Karma
         private Stream stream;
         private KarmaOptions options;
 
+        private Dictionary<Type, KarmaMap> typeMapCache = new Dictionary<Type, KarmaMap>();
+
         public KarmaSerializer(Stream stream, KarmaOptions options = null)
         {
             if (stream == null)
@@ -59,7 +61,15 @@ namespace Karma
 
         public void Write(object obj)
         {
-            var typeMap = new KarmaMap(obj.GetType());
+            var type = obj.GetType();
+
+            KarmaMap typeMap;
+            if (!typeMapCache.TryGetValue(type, out typeMap))
+            {
+                typeMap = new KarmaMap(type);
+                typeMapCache.Add(type, typeMap);
+            }
+
             var itemValueMap = typeMap.MapToValues(obj, null, options.SerializeDefaultValues ? (Predicate<object>)null : (value) => value != null);
 
             writer.WriteInt32(itemValueMap.Count);

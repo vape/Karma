@@ -29,6 +29,8 @@ namespace Karma
 
         private bool nullValuesSerialized;
 
+        private Dictionary<Type, KarmaMap> typeMapCache = new Dictionary<Type, KarmaMap>();
+
         public KarmaDeserializer(Stream stream)
         {
             if (stream == null)
@@ -71,7 +73,13 @@ namespace Karma
 
         public object ReadObject(Type type)
         {
-            var typeMap = new KarmaMap(type);
+            KarmaMap typeMap;
+            if (!typeMapCache.TryGetValue(type, out typeMap))
+            {
+                typeMap = new KarmaMap(type);
+                typeMapCache.Add(type, typeMap);
+            }
+
             var instance = CreateTypeInstance(type);
 
             var itemsCount = reader.ReadInt32();
