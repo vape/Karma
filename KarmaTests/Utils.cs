@@ -35,6 +35,19 @@ namespace KarmaTests
 
         public static bool ValuesEquals(object o1, object o2)
         {
+            if (o1 == null && o2 == null)
+            {
+                return true;
+            }
+            else if (o1 == null && o2 != null)
+            {
+                return false;
+            }
+            else if (o1 != null && o2 == null)
+            {
+                return false;
+            }
+
             if (o1.GetType() != o2.GetType())
             {
                 throw new System.Exception("Different types.");

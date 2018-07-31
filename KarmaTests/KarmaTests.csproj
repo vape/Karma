@@ -50,6 +50,8 @@
   <ItemGroup>
     <Compile Include="SerializationAndDeserialization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestTargets\TargetClass.cs" />
+    <Compile Include="TestTargets\TargetStruct.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
