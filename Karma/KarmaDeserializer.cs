@@ -3,6 +3,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace Karma
 {
@@ -26,12 +28,13 @@ namespace Karma
 
         private KarmaReader reader;
         private Stream stream;
+        private KarmaOptions options;
 
         private bool nullValuesSerialized;
 
         private Dictionary<Type, KarmaMap> typeMapCache = new Dictionary<Type, KarmaMap>();
 
-        public KarmaDeserializer(Stream stream)
+        public KarmaDeserializer(Stream stream, KarmaOptions options = null)
         {
             if (stream == null)
             {
@@ -45,6 +48,7 @@ namespace Karma
 
             this.stream = stream;
             this.reader = new KarmaReader(stream);
+            this.options = options ?? new KarmaOptions();
 
             ReadHeader();
         }
@@ -181,7 +185,57 @@ namespace Karma
 
         private object CreateTypeInstance(Type type, params object[] args)
         {
+            if (options.AllowCreatingObjectWithoutConstructor)
+            {
+                var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                if (constructors.Length == 0)
+                {
+                    goto reliable_solution;
+                }
+
+                var argTypes = new Type[args.Length];
+
+                for (int i = 0; i < args.Length; ++i)
+                {
+                    if (args[i] != null)
+                    {
+                        argTypes[i] = args[i].GetType();
+                    }
+                }
+
+                var matchedConstructors = new List<ConstructorInfo>(constructors.Length);
+                for (int i = 0; i < constructors.Length; ++i)
+                {
+                    if (FilterConstructorParameters(constructors[i], argTypes))
+                    {
+                        goto reliable_solution;
+                    }
+                }
+
+                return FormatterServices.GetUninitializedObject(type);
+            }
+
+reliable_solution:
             return Activator.CreateInstance(type, args);
+        }
+
+        private bool FilterConstructorParameters(ConstructorInfo info, Type[] parameterTypes)
+        {
+            var constructorParameters = info.GetParameters();
+            if (constructorParameters.Length != parameterTypes.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < parameterTypes.Length; ++i)
+            {
+                if (parameterTypes[i] != null && !Object.ReferenceEquals(constructorParameters[i].ParameterType, parameterTypes[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public void Dispose()

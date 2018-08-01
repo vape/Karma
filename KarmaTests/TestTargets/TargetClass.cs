@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace KarmaTests.TestTargets
 {
-    public class TargetClass
+    public class TargetClass : IAssertable<TargetClass>
     {
         [KarmaMember]
         public TargetClass SubTargetClassField;
