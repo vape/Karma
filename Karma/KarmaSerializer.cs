@@ -47,7 +47,7 @@ namespace Karma
 
             this.writer = new KarmaWriter(stream);
             this.stream = stream;
-            this.options = options;
+            this.options = options ?? new KarmaOptions();
 
             WriteHeader();
         }
