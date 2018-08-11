@@ -29,10 +29,10 @@ namespace Karma
         private KarmaReader reader;
         private Stream stream;
         private KarmaOptions options;
-
-        private bool nullValuesSerialized;
+        private Assembly[] assemblies;
 
         private Dictionary<Type, KarmaMap> typeMapCache = new Dictionary<Type, KarmaMap>();
+        private Dictionary<string, Type> typesCache = new Dictionary<string, Type>();
 
         public KarmaDeserializer(Stream stream, KarmaOptions options = null)
         {
@@ -49,6 +49,7 @@ namespace Karma
             this.stream = stream;
             this.reader = new KarmaReader(stream);
             this.options = options ?? new KarmaOptions();
+            this.assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
             ReadHeader();
         }
@@ -66,8 +67,6 @@ namespace Karma
             {
                 throw new InvalidDataException("Serialzied version is higher than reader's.");
             }
-
-            nullValuesSerialized = reader.ReadBool();
         }
 
         public T Read<T>()
@@ -77,14 +76,40 @@ namespace Karma
 
         public object ReadObject(Type type)
         {
-            KarmaMap typeMap;
-            if (!typeMapCache.TryGetValue(type, out typeMap))
+            Type instanceType = type;
+            if (reader.ReadBool())
             {
-                typeMap = new KarmaMap(type);
-                typeMapCache.Add(type, typeMap);
+                var typeName = reader.ReadString();
+                if (!typesCache.TryGetValue(typeName, out instanceType))
+                {
+                    instanceType = Type.GetType(typeName, false);
+                    if (instanceType != null)
+                    {
+                        typesCache[typeName] = instanceType;
+                    }
+                    else
+                    {
+                        for (int i = 0; i < assemblies.Length; ++i)
+                        {
+                            instanceType = assemblies[i].GetType(typeName);
+                            if (instanceType != null)
+                            {
+                                typesCache.Add(typeName, instanceType);
+                                break;
+                            }
+                        }
+                    }
+                }
             }
 
-            var instance = CreateTypeInstance(type);
+            KarmaMap typeMap;
+            if (!typeMapCache.TryGetValue(instanceType, out typeMap))
+            {
+                typeMap = new KarmaMap(instanceType);
+                typeMapCache.Add(instanceType, typeMap);
+            }
+
+            var instance = CreateTypeInstance(instanceType);
 
             var itemsCount = reader.ReadInt32();
             for (int i = 0; i < itemsCount; ++i)
@@ -96,14 +121,11 @@ namespace Karma
                     throw new KarmaException($"Data stream contains unknown member: {itemName}");
                 }
 
-                if (nullValuesSerialized)
+                var isNull = reader.ReadBool();
+                if (isNull)
                 {
-                    var isNull = reader.ReadBool();
-                    if (isNull)
-                    {
-                        item.SetValue(instance, null);
-                        continue;
-                    }
+                    item.SetValue(instance, null);
+                    continue;
                 }
 
                 item.SetValue(instance, ReadValue(item.MemberType));

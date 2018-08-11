@@ -9,7 +9,7 @@ namespace Karma
     public class KarmaSerializer : IDisposable
     {
         public const int Magic = 0xFADE;
-        public const int Version = 1;
+        public const int Version = 2;
 
         private static Dictionary<Type, Action<KarmaWriter, object>> typeWriters = new Dictionary<Type, Action<KarmaWriter, object>>()
         {
@@ -42,7 +42,7 @@ namespace Karma
 
             if (!stream.CanWrite)
             {
-                throw new ArgumentException("Stream can not be written to.");
+                throw new ArgumentException("Can not write to stream.");
             }
 
             this.writer = new KarmaWriter(stream);
@@ -56,12 +56,17 @@ namespace Karma
         {
             writer.WriteInt32(Magic);
             writer.WriteInt32(Version);
-            writer.WriteBool(options.SerializeDefaultValues);
         }
 
-        public void Write(object obj)
+        public void Write(object obj, bool serializeTypeName = false)
         {
             var type = obj.GetType();
+
+            writer.WriteBool(serializeTypeName);
+            if (serializeTypeName)
+            {
+                writer.WriteString(type.FullName);
+            }
 
             KarmaMap typeMap;
             if (!typeMapCache.TryGetValue(type, out typeMap))
@@ -70,7 +75,19 @@ namespace Karma
                 typeMapCache.Add(type, typeMap);
             }
 
-            var itemValueMap = typeMap.MapToValues(obj, null, options.SerializeDefaultValues ? (Predicate<object>)null : (value) => value != null);
+            var itemValueMap = typeMap.MapToValues(
+                obj, 
+                null, 
+                (value) =>
+                {
+                    if (!options.SerializeDefaultValues)
+                    {
+                        return value != null;
+                    }
+
+                    return true;
+                }
+            );
 
             writer.WriteInt32(itemValueMap.Count);
             foreach (var item in itemValueMap)
@@ -79,24 +96,18 @@ namespace Karma
 
                 if (item.Item2 == null)
                 {
-                    if (options.SerializeDefaultValues)
-                    {
-                        writer.WriteBool(true);
-                    }
+                    writer.WriteBool(true);
+                    continue;
                 }
                 else
                 {
-                    if (options.SerializeDefaultValues)
-                    {
-                        writer.WriteBool(false);
-                    }
-
-                    WriteObject(item.Item2);
+                    writer.WriteBool(false);
+                    WriteValue(item.Item2, item.Item1.MemberType.IsAbstract);
                 }
             }
         }
 
-        private void WriteObject(object obj)
+        private void WriteValue(object obj, bool serializeTypeName = false)
         {
             var type = obj.GetType();
             Action<KarmaWriter, object> typeWriter;
@@ -127,15 +138,18 @@ namespace Karma
                 }
             }
 
-            Write(obj);
+            Write(obj, serializeTypeName);
         }
 
         private void WriteArray(Array array)
         {
+            var elementType = array.GetType().GetElementType();
+            var serializeType = elementType.IsAbstract || elementType == typeof(System.Object);
+
             writer.WriteInt32(array.Length);
             for (int i = 0; i < array.Length; ++i)
             {
-                WriteObject(array.GetValue(i));
+                WriteValue(array.GetValue(i), serializeType);
             }
         }
 
@@ -144,7 +158,7 @@ namespace Karma
             writer.WriteInt32(list.Count);
             for (int i = 0; i < list.Count; ++i)
             {
-                WriteObject(list[i]);
+                WriteValue(list[i], true);
             }
         }
 
@@ -153,8 +167,8 @@ namespace Karma
             writer.WriteInt32(dictionary.Count);
             foreach (var key in dictionary.Keys)
             {
-                WriteObject(key);
-                WriteObject(dictionary[key]);
+                WriteValue(key);
+                WriteValue(dictionary[key]);
             }
         }
 

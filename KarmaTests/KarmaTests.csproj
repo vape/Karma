@@ -54,6 +54,7 @@
     <Compile Include="TestTargets\TargetClass.cs" />
     <Compile Include="TestTargets\TargetClassWithoutEmptyConstructor.cs" />
     <Compile Include="TestTargets\TargetStruct.cs" />
+    <Compile Include="TestTargets\TargetAbstractClass.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>

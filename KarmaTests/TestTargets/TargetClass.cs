@@ -98,6 +98,19 @@ namespace KarmaTests.TestTargets
         public Guid GuidProperty
         { get; private set; }
 
+        [KarmaMember]
+        public TargetAbstractClass[] ArrayWithClassInheritedFromAbstractProperty
+        { get; set; }
+        [KarmaMember]
+        public List<TargetAbstractClass> ListWithClassInheritedFromAbstractProperty
+        { get; set; }
+        [KarmaMember]
+        public TargetAbstractClass TargetAbstractClassProperty
+        { get; set; }
+        [KarmaMember]
+        public object[] ArrayOfObjectsProperty
+        { get; set; }
+
         public void FillValues(int depth)
         {
             depth++;
@@ -132,6 +145,10 @@ namespace KarmaTests.TestTargets
             Int32ListField = new List<int>() { 6, 7, 8, 9, 10 };
             Int32ArrayProperty = new int[5] { 10, 20, 30, 40, 50 };
             Int32ListProperty = new List<int>() { 60, 70, 80, 90, 100 };
+            ArrayWithClassInheritedFromAbstractProperty = new TargetAbstractClass[1] { new TargetClassInheritedFromAbstract(132541) };
+            ListWithClassInheritedFromAbstractProperty = new List<TargetAbstractClass>() { new TargetClassInheritedFromAbstract(1111) };
+            TargetAbstractClassProperty = new TargetClassInheritedFromAbstract(2222);
+            ArrayOfObjectsProperty = new object[1] { new TargetClassInheritedFromAbstract(1515241) };
 
             Int32Int32DictionaryField = new Dictionary<int, int>();
             Int32Int32DictionaryField.Add(0, 1);
@@ -196,6 +213,11 @@ namespace KarmaTests.TestTargets
             Assert.IsTrue(Utils.ValuesEquals(Int32ArrayProperty, target.Int32ArrayProperty));
             Assert.IsTrue(Utils.ValuesEquals(Int32ListProperty, target.Int32ListProperty));
             Assert.IsTrue(Utils.ValuesEquals(Int32Int32DictionaryProperty, target.Int32Int32DictionaryProperty));
+
+            Assert.IsTrue(Utils.ValuesEquals(ArrayWithClassInheritedFromAbstractProperty, target.ArrayWithClassInheritedFromAbstractProperty));
+            Assert.IsTrue(Utils.ValuesEquals(ListWithClassInheritedFromAbstractProperty, target.ListWithClassInheritedFromAbstractProperty));
+            Assert.IsTrue(Utils.ValuesEquals(TargetAbstractClassProperty, target.TargetAbstractClassProperty));
+            Assert.IsTrue(Utils.ValuesEquals(ArrayOfObjectsProperty, target.ArrayOfObjectsProperty));
 
             if (SubTargetClassField == null)
             { Assert.IsNull(target.SubTargetClassField); }
